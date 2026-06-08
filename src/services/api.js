@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Use the local network IP so physical devices scanning the Expo QR Code can connect
-const IP = '192.168.100.2';
+const IP = '192.168.100.8';
 export const BASE_URL = `http://${IP}:3000/api`;
 
 export const apiFetch = async (endpoint, options = {}) => {

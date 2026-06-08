@@ -24,6 +24,23 @@ class ProfessorController {
     }
   }
 
+  static async editar(req, res) {
+    const { id } = req.params;
+    const { nome, titulacao, area, tempo_docencia } = req.body;
+    try {
+      const query = `
+        UPDATE professores 
+        SET nome = $1, titulacao = $2, area = $3, tempo_docencia = $4
+        WHERE id = $5
+      `;
+      await db.query(query, [nome, titulacao, area, tempo_docencia, id]);
+      res.json({ message: 'Professor atualizado com sucesso' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Erro ao atualizar professor' });
+    }
+  }
+
   static async deletar(req, res) {
     const { id } = req.params;
     try {

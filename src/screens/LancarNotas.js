@@ -1,12 +1,14 @@
+import SafeKeyboard from '../components/SafeKeyboard';
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Alert, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Alert, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
-import { colors, globalStyles } from '../styles/globalStyles';
+import { colors, fonts, globalStyles } from '../styles/globalStyles';
 import { apiFetch } from '../services/api';
-
+import useAuth from '../hooks/useAuth';
+import GlassBackground from '../components/GlassBackground';
+import SafeBlurView from '../components/SafeBlurView';
 export default function LancarNotas() {
   const [disciplinas, setDisciplinas] = useState([]);
   const [alunos, setAlunos] = useState([]);
@@ -15,21 +17,15 @@ export default function LancarNotas() {
   const [nota1, setNota1] = useState('');
   const [nota2, setNota2] = useState('');
   const [loading, setLoading] = useState(false);
+  const { usuario } = useAuth();
 
   useEffect(() => {
     const carregarDados = async () => {
       try {
-        const perfil = await AsyncStorage.getItem('@perfil');
-        const userId = await AsyncStorage.getItem('@id');
-
-        // Busca alunos
-        const alunosData = await apiFetch('/alunos');
-        setAlunos(alunosData);
-
-        // Busca disciplinas
+        // Busca disciplinas (professor vê apenas as suas, admin vê todas)
         let disciplinasData = [];
-        if (perfil === 'professor') {
-          disciplinasData = await apiFetch(`/disciplinas/professor/${userId}`);
+        if (usuario?.perfil === 'professor') {
+          disciplinasData = await apiFetch(`/disciplinas/professor/${usuario.id}`);
         } else {
           disciplinasData = await apiFetch('/disciplinas');
         }
@@ -44,6 +40,14 @@ export default function LancarNotas() {
   const handleSalvar = async () => {
     if (!disciplinaId || !alunoId || !nota1 || !nota2) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+      return;
+    }
+
+    // Validação de intervalo 0 a 10
+    const n1 = parseFloat(nota1);
+    const n2 = parseFloat(nota2);
+    if (isNaN(n1) || isNaN(n2) || n1 < 0 || n1 > 10 || n2 < 0 || n2 > 10) {
+      Alert.alert('Nota Inválida', 'As notas devem ser valores numéricos entre 0 e 10.');
       return;
     }
 
@@ -71,8 +75,10 @@ export default function LancarNotas() {
   };
 
   return (
-    <ScrollView style={globalStyles.container} showsVerticalScrollIndicator={false}>
-      <Text style={globalStyles.title}>Lançar Notas</Text>
+    <GlassBackground>
+      <SafeKeyboard style={{ flex: 1 }} behavior="padding">
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingTop: 100, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
+        <Text style={globalStyles.title}>Lançar Notas</Text>
       <Text style={globalStyles.subtitle}>Insira ou atualize as notas do aluno</Text>
 
       <View style={styles.pickerContainer}>
@@ -80,11 +86,25 @@ export default function LancarNotas() {
         <View style={styles.pickerWrapper}>
           <Picker
             selectedValue={disciplinaId}
-            onValueChange={(itemValue) => setDisciplinaId(itemValue)}
+            onValueChange={async (itemValue) => {
+              setDisciplinaId(itemValue);
+              setAlunoId('');
+              if (itemValue) {
+                try {
+                  const alunosData = await apiFetch(`/disciplinas/${itemValue}/alunos`);
+                  setAlunos(alunosData);
+                } catch (err) {
+                  Alert.alert('Erro', 'Falha ao buscar alunos da disciplina');
+                }
+              } else {
+                setAlunos([]);
+              }
+            }}
+            style={styles.picker}
           >
-            <Picker.Item label="Selecione a disciplina..." value="" />
+            <Picker.Item label="Selecione a disciplina..." value="" style={styles.pickerItem} />
             {disciplinas.map((d) => (
-              <Picker.Item key={d.id} label={`${d.nome} (${d.curso})`} value={String(d.id)} />
+              <Picker.Item key={d.id} label={`${d.nome} (${d.curso})`} value={String(d.id)} style={styles.pickerItem} />
             ))}
           </Picker>
         </View>
@@ -96,16 +116,19 @@ export default function LancarNotas() {
           <Picker
             selectedValue={alunoId}
             onValueChange={(itemValue) => setAlunoId(itemValue)}
+            style={styles.picker}
+            enabled={!!disciplinaId} // Desabilita se não tiver disciplina selecionada
           >
-            <Picker.Item label="Selecione o aluno..." value="" />
+            <Picker.Item label={disciplinaId ? "Selecione o aluno..." : "Selecione uma disciplina primeiro..."} value="" style={styles.pickerItem} />
             {alunos.map((a) => (
-              <Picker.Item key={a.id} label={`${a.nome} (${a.matricula})`} value={String(a.id)} />
+                <Picker.Item key={a.id} label={`${a.nome} (${a.matricula})`} value={String(a.id)} style={styles.pickerItem} />
             ))}
           </Picker>
         </View>
       </View>
 
-      <View style={{ flexDirection: 'row', gap: 15, marginTop: 10 }}>
+      <Text style={styles.sectionLabel}>Notas</Text>
+      <View style={styles.notasRow}>
         <View style={{ flex: 1 }}>
           <CustomInput 
             label="Nota 1" 
@@ -126,7 +149,7 @@ export default function LancarNotas() {
         </View>
       </View>
 
-      <View style={{ marginBottom: 40, marginTop: 20 }}>
+      <View style={styles.buttonContainer}>
         <CustomButton 
           title={loading ? "Salvando..." : "Salvar Notas"} 
           onPress={handleSalvar} 
@@ -134,7 +157,9 @@ export default function LancarNotas() {
           icon="save-outline" 
         />
       </View>
-    </ScrollView>
+      </ScrollView>
+      </SafeKeyboard>
+    </GlassBackground>
   );
 }
 
@@ -143,16 +168,43 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   pickerLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 13,
+    fontFamily: fonts.bold,
     color: colors.textLight,
-    marginBottom: 5,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 8,
   },
   pickerWrapper: {
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: colors.border,
-    borderRadius: 8,
-    backgroundColor: '#fff',
+    borderRadius: 16,
+    backgroundColor: colors.surface,
     overflow: 'hidden',
-  }
+  },
+  picker: {
+    fontFamily: fonts.regular,
+  },
+  pickerItem: {
+    fontFamily: fonts.regular,
+    fontSize: 15,
+  },
+  sectionLabel: {
+    fontSize: 13,
+    fontFamily: fonts.bold,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  notasRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 4,
+  },
+  buttonContainer: {
+    marginBottom: 40,
+    marginTop: 24,
+  },
 });

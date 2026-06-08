@@ -1,33 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, globalStyles } from '../styles/globalStyles';
+import { colors, fonts, globalStyles } from '../styles/globalStyles';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
 import { apiFetch } from '../services/api';
-
-export default function Boletim() {
-  const [matricula, setMatricula] = useState('');
+import useAuth from '../hooks/useAuth';
+import GlassBackground from '../components/GlassBackground';
+import SafeBlurView from '../components/SafeBlurView';
+export default function Boletim({ route }) {
+  const paramMatricula = route?.params?.matricula;
+  const [matricula, setMatricula] = useState(paramMatricula || '');
   const [boletim, setBoletim] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [perfil, setPerfil] = useState(null);
+  const { usuario } = useAuth();
+  const perfil = usuario?.perfil;
 
   useEffect(() => {
-    const init = async () => {
-      const p = await AsyncStorage.getItem('@perfil');
-      setPerfil(p);
-      if (p === 'aluno') {
-        const mat = await AsyncStorage.getItem('@matricula');
-        if (mat) {
-          buscarBoletim(mat);
-        } else {
-          Alert.alert('Erro', 'Matrícula não encontrada.');
-        }
-      }
-    };
-    init();
-  }, []);
+    if (paramMatricula) {
+      buscarBoletim(paramMatricula);
+    } else if (perfil === 'aluno' && usuario?.matricula) {
+      buscarBoletim(usuario.matricula);
+    } else if (perfil === 'aluno') {
+      Alert.alert('Erro', 'Matrícula não encontrada.');
+    }
+  }, [paramMatricula]);
 
   const buscarBoletim = async (matSearch) => {
     const mat = typeof matSearch === 'string' ? matSearch : matricula;
@@ -54,7 +51,7 @@ export default function Boletim() {
     const statusIcon = isAprovado ? 'checkmark-circle' : 'close-circle';
 
     return (
-      <View style={[styles.card, globalStyles.shadow]}>
+      <SafeBlurView intensity={70} tint="light" style={globalStyles.card}>
         <View style={styles.cardHeader}>
           <View style={styles.iconContainer}>
             <Ionicons name="book" size={20} color={colors.primary} />
@@ -77,19 +74,20 @@ export default function Boletim() {
           </View>
         </View>
         
-        <View style={[styles.resultadoContainer, { backgroundColor: isAprovado ? '#ECFDF5' : '#FEF2F2' }]}>
+        <View style={[styles.resultadoContainer, { backgroundColor: isAprovado ? colors.successLight : colors.dangerLight }]}>
           <Ionicons name={statusIcon} size={24} color={statusColor} />
           <Text style={[styles.situacaoTexto, { color: statusColor }]}>
             STATUS: {item.situacao}
           </Text>
         </View>
-      </View>
+      </SafeBlurView>
     );
   };
 
   return (
-    <View style={globalStyles.container}>
-      <Text style={globalStyles.title}>Meu Boletim</Text>
+    <GlassBackground>
+      <View style={globalStyles.container}>
+        <Text style={globalStyles.title}>Meu Boletim</Text>
       <Text style={globalStyles.subtitle}>Acompanhamento de desempenho acadêmico</Text>
 
       {perfil !== 'aluno' && (
@@ -111,27 +109,37 @@ export default function Boletim() {
       {loading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingTexto}>Buscando notas no sistema...</Text>
+          <Text style={styles.loadingTexto}>Buscando notas não sistema...</Text>
         </View>
       )}
 
       {!loading && boletim && (
         <View style={{ flex: 1 }}>
-          <View style={styles.alunoInfo}>
-            <Text style={styles.alunoNome}>{boletim.nome}</Text>
-            <Text style={styles.alunoCurso}>{boletim.curso}</Text>
-          </View>
+          <SafeBlurView intensity={70} tint="light" style={styles.alunoInfo}>
+            <View style={styles.alunoInfoHeader}>
+              <View style={styles.alunoIconContainer}>
+                <Ionicons name="person" size={20} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.alunoNome}>{boletim.nome}</Text>
+                <Text style={styles.alunoCurso}>{boletim.curso}</Text>
+              </View>
+            </View>
+          </SafeBlurView>
           <FlatList
             data={boletim.disciplinas}
             keyExtractor={(item, index) => String(index)}
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 40 }}
-            ListEmptyComponent={<Text style={{textAlign: 'center', marginTop: 20}}>Nenhuma disciplina encontrada.</Text>}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>Nenhuma disciplina encontrada.</Text>
+            }
           />
         </View>
       )}
-    </View>
+      </View>
+    </GlassBackground>
   );
 }
 
@@ -140,22 +148,34 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   alunoInfo: {
-    marginBottom: 15,
-    padding: 15,
-    backgroundColor: '#EFF6FF',
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: colors.primaryLight,
+    borderRadius: 16,
+  },
+  alunoInfoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  alunoIconContainer: {
+    width: 40,
+    height: 40,
+    backgroundColor: colors.white,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   alunoNome: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     color: colors.primary,
   },
   alunoCurso: {
     fontSize: 14,
+    fontFamily: fonts.regular,
     color: colors.textLight,
-    marginTop: 4,
+    marginTop: 2,
   },
   loadingContainer: {
     flex: 1,
@@ -165,16 +185,8 @@ const styles = StyleSheet.create({
   loadingTexto: {
     marginTop: 15,
     fontSize: 16,
+    fontFamily: fonts.semiBold,
     color: colors.textLight,
-    fontWeight: '500',
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -187,8 +199,8 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 40,
     height: 40,
-    backgroundColor: '#EFF6FF',
-    borderRadius: 8,
+    backgroundColor: colors.primaryLight,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -196,7 +208,7 @@ const styles = StyleSheet.create({
   disciplinaNome: {
     flex: 1,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     color: colors.text,
   },
   notasContainer: {
@@ -209,32 +221,42 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mediaBox: {
-    borderLeftWidth: 1,
-    borderLeftColor: colors.border,
+    backgroundColor: colors.primaryLight,
+    borderRadius: 12,
+    paddingVertical: 8,
+    marginLeft: 4,
   },
   notaLabel: {
     fontSize: 12,
+    fontFamily: fonts.semiBold,
     color: colors.textLight,
     textTransform: 'uppercase',
-    fontWeight: '600',
+    letterSpacing: 0.5,
     marginBottom: 4,
   },
   notaValor: {
-    fontSize: 20,
-    fontWeight: '800',
+    fontSize: 22,
+    fontFamily: fonts.extraBold,
     color: colors.text,
   },
   resultadoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
-    borderRadius: 12,
+    padding: 14,
+    borderRadius: 16,
     gap: 8,
   },
   situacaoTexto: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     letterSpacing: 0.5,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontFamily: fonts.regular,
+    fontSize: 15,
+    color: colors.textMuted,
   },
 });

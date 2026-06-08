@@ -6,15 +6,29 @@ const AlunoController = require('../controllers/AlunoController');
 const ProfessorController = require('../controllers/ProfessorController');
 const DisciplinaController = require('../controllers/DisciplinaController');
 const NotaController = require('../controllers/NotaController');
+const MatriculaController = require('../controllers/MatriculaController');
 const auth = require('../middlewares/authMiddleware');
 
 // Autenticação
 router.post('/login', AuthController.login);
+router.put('/reset-password', AuthController.resetPassword);
+router.put('/perfil/senha', auth(['admin', 'professor', 'aluno']), AuthController.updatePassword);
 
-// Cadastros (Apenas Admin)
+// Cadastros e Edições (Apenas Admin)
 router.post('/alunos', auth(['admin']), AlunoController.cadastrar);
+router.put('/alunos/:id', auth(['admin']), AlunoController.editar);
+
+// Matrículas (Admin)
+router.get('/matriculas/:alunoId', auth(['admin']), MatriculaController.listar);
+router.post('/matriculas/:alunoId', auth(['admin']), MatriculaController.salvar);
+
 router.post('/professores', auth(['admin']), ProfessorController.cadastrar);
+router.put('/professores/:id', auth(['admin']), ProfessorController.editar);
+
 router.post('/disciplinas', auth(['admin']), DisciplinaController.cadastrar);
+router.put('/disciplinas/:id', auth(['admin']), DisciplinaController.editar);
+router.delete('/disciplinas/:id', auth(['admin']), DisciplinaController.deletar);
+router.get('/disciplinas/:id/alunos', auth(['admin', 'professor']), DisciplinaController.alunos);
 
 // Listagens
 router.get('/alunos', auth(['admin', 'professor']), AlunoController.listar);

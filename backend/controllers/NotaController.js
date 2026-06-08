@@ -6,6 +6,13 @@ class NotaController {
     const { aluno_id, disciplina_id, nota1, nota2 } = req.body;
     const usuario = req.usuario;
 
+    // Validação de intervalo 0 a 10
+    const n1 = parseFloat(nota1);
+    const n2 = parseFloat(nota2);
+    if (isNaN(n1) || isNaN(n2) || n1 < 0 || n1 > 10 || n2 < 0 || n2 > 10) {
+      return res.status(400).json({ error: 'As notas devem ser valores numéricos entre 0 e 10.' });
+    }
+
     try {
       // Regra de Propriedade
       if (usuario.perfil === 'professor') {

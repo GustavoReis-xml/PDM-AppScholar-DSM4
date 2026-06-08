@@ -30,6 +30,24 @@ class AlunoController {
     }
   }
 
+  static async editar(req, res) {
+    const { id } = req.params;
+    const { nome, matricula, curso, telefone, cep, rua, numero, bairro, cidade, estado, semestre } = req.body;
+    try {
+      // Ignora email e senha para não complicar a edição básica agora
+      const query = `
+        UPDATE alunos 
+        SET nome = $1, matricula = $2, curso = $3, telefone = $4, cep = $5, rua = $6, numero = $7, bairro = $8, cidade = $9, estado = $10, semestre = $11
+        WHERE id = $12
+      `;
+      await db.query(query, [nome, matricula, curso, telefone, cep, rua, numero, bairro, cidade, estado, semestre, id]);
+      res.json({ message: 'Aluno atualizado com sucesso' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Erro ao atualizar aluno' });
+    }
+  }
+
   static async deletar(req, res) {
     const { id } = req.params;
     try {

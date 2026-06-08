@@ -77,32 +77,31 @@ const initDB = async () => {
     if (parseInt(checkRes.rows[0].count) === 0) {
       const seedQuery = `
         INSERT INTO admins (nome, email, senha) VALUES 
-        ('Administrador Geral', 'admin@fatec.sp.gov.br', 'admin');
+        ('Admin Mestre', 'admin@fatec.sp.gov.br', 'admin');
 
         INSERT INTO professores (nome, titulacao, area, tempo_docencia, email, senha) VALUES 
-        ('Professor Silva', 'Doutor', 'Matemática', 10, 'silva@fatec.sp.gov.br', 'professor'),
-        ('Professora Ana', 'Mestre', 'Programação', 5, 'ana@fatec.sp.gov.br', 'professor'),
-        ('Professor Carlos', 'Especialista', 'Redes', 8, 'carlos@fatec.sp.gov.br', 'professor');
+        ('Alberto Silva', 'Mestre', 'Programação', 8, 'alberto@fatec.sp.gov.br', 'prof123'),
+        ('Beatriz Souza', 'Doutora', 'Banco de Dados', 12, 'beatriz@fatec.sp.gov.br', 'prof123'),
+        ('Carlos Eduardo', 'Especialista', 'Gestão', 5, 'carlos@fatec.sp.gov.br', 'prof123');
 
         INSERT INTO alunos (nome, matricula, curso, email, senha, cidade, estado, rua, numero, bairro, semestre) VALUES 
-        ('Aluno Padrão', '123456', 'Desenvolvimento de Software Multiplataforma', 'aluno@fatec.sp.gov.br', 'aluno', 'São Paulo', 'SP', 'Rua Principal', '100', 'Centro', '1º Semestre'),
-        ('João da Silva', '1001', 'Análise de Sistemas', 'joao.silva@fatec.sp.gov.br', 'aluno', 'Campinas', 'SP', 'Rua das Flores', '12', 'Jardim Primavera', '2º Semestre'),
-        ('Maria Oliveira', '1002', 'Análise de Sistemas', 'maria.oliveira@fatec.sp.gov.br', 'aluno', 'Jacareí', 'SP', 'Av Brasil', '500', 'Centro', '3º Semestre'),
-        ('Pedro Souza', '1003', 'Gestão de TI', 'pedro.souza@fatec.sp.gov.br', 'aluno', 'Santos', 'SP', 'Rua da Praia', '20', 'Gonzaga', '1º Semestre');
+        ('Lucas Andrade', '2001', 'Análise e Desenv. de Sistemas', 'lucas@fatec.sp.gov.br', 'aluno123', 'São Paulo', 'SP', 'Rua A', '10', 'Centro', '1º Semestre'),
+        ('Felipe Rocha', '2003', 'Gestão da Tecnologia da Informação', 'felipe@fatec.sp.gov.br', 'aluno123', 'Santos', 'SP', 'Rua C', '30', 'Praia', '3º Semestre'),
+        ('Juliana Mendes', '2004', 'Gestão da Tecnologia da Informação', 'juliana@fatec.sp.gov.br', 'aluno123', 'São Vicente', 'SP', 'Rua D', '40', 'Centro', '4º Semestre');
 
         INSERT INTO disciplinas (nome, carga_horaria, professor_id, curso, semestre) VALUES 
-        ('Cálculo I', 80, 1, 'Análise de Sistemas', '1º Semestre'),
-        ('Programação Mobile I', 80, 2, 'Análise de Sistemas', '4º Semestre'),
-        ('Banco de Dados', 60, 2, 'Desenvolvimento de Software Multiplataforma', '2º Semestre'),
-        ('Redes de Computadores', 60, 3, 'Análise de Sistemas', '3º Semestre');
+        ('Lógica de Programação', 80, 1, 'Análise e Desenv. de Sistemas', '1º Semestre'),
+        ('Programação Web', 80, 1, 'Desenv. de Software Multiplataforma', '2º Semestre'),
+        ('Banco de Dados Relacional', 80, 2, 'Desenv. de Software Multiplataforma', '2º Semestre'),
+        ('Modelagem de Dados', 40, 2, 'Análise e Desenv. de Sistemas', '1º Semestre'),
+        ('Empreendedorismo', 40, 3, 'Gestão da Tecnologia da Informação', '3º Semestre'),
+        ('Governança de TI', 60, 3, 'Gestão da Tecnologia da Informação', '4º Semestre');
 
         INSERT INTO notas (aluno_id, disciplina_id, nota1, nota2, media, situacao) VALUES 
-        (1, 2, 8.5, 9.0, 8.75, 'Aprovado'),
-        (1, 3, 5.0, 6.0, 5.5, 'Reprovado'),
-        (2, 1, 7.0, 8.0, 7.5, 'Aprovado'),
-        (2, 2, 9.0, 9.5, 9.25, 'Aprovado'),
-        (3, 1, 4.0, 5.0, 4.5, 'Reprovado'),
-        (4, 4, 10.0, 10.0, 10.0, 'Aprovado');
+        (1, 1, NULL, NULL, NULL, NULL), -- Lucas em Lógica
+        (1, 4, 8.0, 9.0, 8.5, 'Aprovado'), -- Lucas em Modelagem
+        (2, 5, 7.5, 7.5, 7.5, 'Aprovado'), -- Felipe em Empreend.
+        (3, 6, 6.0, 5.0, 5.5, 'Reprovado'); -- Juliana em Governança
       `;
       await pool.query(seedQuery);
       console.log('Dados iniciais (seed) inseridos com sucesso!');
