@@ -7,6 +7,7 @@ const ProfessorController = require('../controllers/ProfessorController');
 const DisciplinaController = require('../controllers/DisciplinaController');
 const NotaController = require('../controllers/NotaController');
 const MatriculaController = require('../controllers/MatriculaController');
+const CursoController = require('../controllers/CursoController');
 const auth = require('../middlewares/authMiddleware');
 
 // Autenticação
@@ -43,6 +44,13 @@ router.post('/notas', auth(['admin', 'professor']), NotaController.cadastrar);
 router.delete('/alunos/:id', auth(['admin']), AlunoController.deletar);
 router.delete('/professores/:id', auth(['admin']), ProfessorController.deletar);
 router.delete('/disciplinas/:id', auth(['admin']), DisciplinaController.deletar);
+
+// Cursos (CRUD completo)
+router.post('/cursos', auth(['admin']), CursoController.cadastrar);
+router.get('/cursos', auth(['admin', 'professor', 'aluno']), CursoController.listar);
+router.get('/cursos/:id', auth(['admin']), CursoController.buscarPorId);
+router.put('/cursos/:id', auth(['admin']), CursoController.editar);
+router.delete('/cursos/:id', auth(['admin']), CursoController.deletar);
 
 // Consulta de Boletim
 router.get('/boletim/:matricula', auth(['admin', 'professor', 'aluno']), AlunoController.boletim);

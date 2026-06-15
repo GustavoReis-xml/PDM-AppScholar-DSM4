@@ -18,6 +18,14 @@ const initDB = async () => {
       senha VARCHAR(255) NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS cursos (
+      id SERIAL PRIMARY KEY,
+      nome VARCHAR(255) UNIQUE NOT NULL,
+      area VARCHAR(100),
+      duracao INTEGER,
+      coordenador VARCHAR(255)
+    );
+
     CREATE TABLE IF NOT EXISTS alunos (
       id SERIAL PRIMARY KEY,
       nome VARCHAR(255) NOT NULL,
@@ -78,6 +86,13 @@ const initDB = async () => {
       const seedQuery = `
         INSERT INTO admins (nome, email, senha) VALUES 
         ('Admin Mestre', 'admin@fatec.sp.gov.br', 'admin');
+
+        INSERT INTO cursos (nome, area, duracao, coordenador) VALUES
+        ('Análise e Desenv. de Sistemas', 'Tecnologia da Informação', 6, 'Prof. Ricardo Lima'),
+        ('Desenv. de Software Multiplataforma', 'Tecnologia da Informação', 6, 'Prof. André Olímpio'),
+        ('Gestão da Tecnologia da Informação', 'Gestão e Negócios', 6, 'Prof. Mariana Costa'),
+        ('Logística', 'Gestão e Negócios', 6, 'Prof. Fernando Alves'),
+        ('Gestão de Recursos Humanos', 'Gestão e Negócios', 4, 'Prof. Carla Ribeiro');
 
         INSERT INTO professores (nome, titulacao, area, tempo_docencia, email, senha) VALUES 
         ('Alberto Silva', 'Mestre', 'Programação', 8, 'alberto@fatec.sp.gov.br', 'prof123'),

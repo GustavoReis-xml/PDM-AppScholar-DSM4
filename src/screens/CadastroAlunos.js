@@ -1,6 +1,6 @@
 import SafeKeyboard from '../components/SafeKeyboard';
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform, StyleSheet, Keyboard } from 'react-native';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, StyleSheet, Keyboard } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
@@ -8,9 +8,11 @@ import { colors, fonts, globalStyles } from '../styles/globalStyles';
 import { apiFetch } from '../services/api';
 import GlassBackground from '../components/GlassBackground';
 import SafeBlurView from '../components/SafeBlurView';
+import { useAlert } from '../contexts/AlertContext';
 
 export default function CadastroAlunos({ route, navigation }) {
   const alunoEdit = route?.params?.aluno;
+  const { showAlert } = useAlert();
   const [nome, setNome] = useState(alunoEdit?.nome || '');
   const [matricula, setMatricula] = useState(alunoEdit?.matricula || '');
   const [curso, setCurso] = useState(alunoEdit?.curso || '');
@@ -24,13 +26,16 @@ export default function CadastroAlunos({ route, navigation }) {
   const [semestre, setSemestre] = useState(alunoEdit?.semestre || '');
   const [loading, setLoading] = useState(false);
 
+  // Cursos do banco de dados
+  const [cursos, setCursos] = useState([]);
+
   // IBGE Localidades
   const [estados, setEstados] = useState([]);
   const [estadoSelecionado, setEstadoSelecionado] = useState(alunoEdit?.estado || '');
   const [cidades, setCidades] = useState([]);
   const [cidadeSelecionada, setCidadeSelecionada] = useState(alunoEdit?.cidade || '');
 
-  // Carregar estados do IBGE ao iniciar a tela
+  // Carregar cursos do banco de dados e estados do IBGE ao iniciar a tela
   useEffect(() => {
     const fetchEstados = async () => {
       try {
@@ -41,7 +46,16 @@ export default function CadastroAlunos({ route, navigation }) {
         console.log('Erro ao buscar estados IBGE:', e);
       }
     };
+    const fetchCursos = async () => {
+      try {
+        const data = await apiFetch('/cursos');
+        setCursos(data);
+      } catch (e) {
+        console.log('Erro ao buscar cursos:', e);
+      }
+    };
     fetchEstados();
+    fetchCursos();
   }, []);
 
   // Carregar cidades quando o estado muda
@@ -112,12 +126,12 @@ export default function CadastroAlunos({ route, navigation }) {
 
   const handleCadastrar = async () => {
     if (!nome || !matricula || !curso || !semestre || (!alunoEdit && !email) || (!alunoEdit && !senha)) {
-      Alert.alert('Erro', 'Por favor, preencha os campos obrigatórios.');
+      showAlert('Erro', 'Por favor, preencha os campos obrigatórios.');
       return;
     }
 
     if (!alunoEdit && !email.endsWith('@fatec.sp.gov.br')) {
-      Alert.alert('E-mail Inválido', 'O e-mail deve ser institucional terminando com @fatec.sp.gov.br');
+      showAlert('E-mail Inválido', 'O e-mail deve ser institucional terminando com @fatec.sp.gov.br');
       return;
     }
     
@@ -141,7 +155,7 @@ export default function CadastroAlunos({ route, navigation }) {
           body: JSON.stringify(dados)
         });
         console.log('[CadastroAlunos] PUT sucesso.');
-        Alert.alert('Sucesso', 'Aluno atualizado com sucesso!', [
+        showAlert('Sucesso', 'Aluno atualizado com sucesso!', [
           { text: 'OK', onPress: () => navigation.goBack() }
         ]);
       } else {
@@ -151,7 +165,7 @@ export default function CadastroAlunos({ route, navigation }) {
           body: JSON.stringify(dados)
         });
         console.log('[CadastroAlunos] POST sucesso.');
-        Alert.alert('Sucesso', 'Aluno cadastrado com sucesso no banco de dados!', [
+        showAlert('Sucesso', 'Aluno cadastrado com sucesso no banco de dados!', [
           {
             text: 'OK',
             onPress: () => {
@@ -164,7 +178,7 @@ export default function CadastroAlunos({ route, navigation }) {
       }
     } catch (err) {
       console.error('[CadastroAlunos] Erro detectado:', err);
-      Alert.alert('Erro', err.message || 'Falha ao cadastrar o aluno.');
+      showAlert('Erro', err.message || 'Falha ao cadastrar o aluno.');
     } finally {
       setLoading(false);
       console.log('[CadastroAlunos] Submissão finalizada.');
@@ -203,12 +217,10 @@ export default function CadastroAlunos({ route, navigation }) {
         <Text style={[styles.pickerLabel, { marginTop: 20 }]}>CURSO</Text>
         <View style={styles.pickerWrapper}>
           <Picker selectedValue={curso} onValueChange={(val) => setCurso(val)}>
-            <Picker.Item label="Selecione o curso..." value="" />
-            <Picker.Item label="Análise e Desenv. de Sistemas" value="Análise e Desenv. de Sistemas" />
-            <Picker.Item label="Desenv. de Software Multiplataforma" value="Desenv. de Software Multiplataforma" />
-            <Picker.Item label="Gestão da Tecnologia da Informação" value="Gestão da Tecnologia da Informação" />
-            <Picker.Item label="Logística" value="Logística" />
-            <Picker.Item label="Gestão de Recursos Humanos" value="Gestão de Recursos Humanos" />
+            <Picker.Item label={cursos.length > 0 ? 'Selecione o curso...' : 'Carregando cursos...'} value="" />
+            {cursos.map((c) => (
+              <Picker.Item key={c.id} label={c.nome} value={c.nome} />
+            ))}
           </Picker>
         </View>
         

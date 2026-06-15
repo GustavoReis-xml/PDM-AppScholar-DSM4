@@ -1,6 +1,7 @@
 import SafeKeyboard from '../components/SafeKeyboard';
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { useAlert } from '../contexts/AlertContext';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
 import { colors, fonts, globalStyles } from '../styles/globalStyles';
@@ -17,15 +18,16 @@ export default function CadastroProfessores({ route, navigation }) {
   const [email, setEmail] = useState(profEdit?.email || '');
   const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
+  const { showAlert } = useAlert();
 
   const handleCadastrar = async () => {
     if (!nome || !titulacao || (!profEdit && !email) || (!profEdit && !senha)) {
-      Alert.alert('Erro', 'Por favor, preencha os campos obrigatórios.');
+      showAlert('Erro', 'Por favor, preencha os campos obrigatórios.');
       return;
     }
 
     if (!profEdit && !email.endsWith('@fatec.sp.gov.br')) {
-      Alert.alert('E-mail Inválido', 'O e-mail deve ser institucional terminando com @fatec.sp.gov.br');
+      showAlert('E-mail Inválido', 'O e-mail deve ser institucional terminando com @fatec.sp.gov.br');
       return;
     }
     
@@ -48,7 +50,7 @@ export default function CadastroProfessores({ route, navigation }) {
           body: JSON.stringify(dados)
         });
         console.log('[CadastroProfessores] PUT sucesso.');
-        Alert.alert('Sucesso', 'Professor atualizado com sucesso!', [
+        showAlert('Sucesso', 'Professor atualizado com sucesso!', [
           { text: 'OK', onPress: () => navigation.goBack() }
         ]);
       } else {
@@ -58,7 +60,7 @@ export default function CadastroProfessores({ route, navigation }) {
           body: JSON.stringify(dados)
         });
         console.log('[CadastroProfessores] POST sucesso.');
-        Alert.alert('Sucesso', 'Professor cadastrado com sucesso!', [
+        showAlert('Sucesso', 'Professor cadastrado com sucesso!', [
           {
             text: 'OK',
             onPress: () => {
@@ -69,7 +71,7 @@ export default function CadastroProfessores({ route, navigation }) {
       }
     } catch (err) {
       console.error('[CadastroProfessores] Erro detectado:', err);
-      Alert.alert('Erro', err.message || 'Falha ao cadastrar o professor.');
+      showAlert('Erro', err.message || 'Falha ao cadastrar o professor.');
     } finally {
       setLoading(false);
       console.log('[CadastroProfessores] Submissão finalizada.');

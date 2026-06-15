@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Switch, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Switch, ActivityIndicator } from 'react-native';
+import { useAlert } from '../contexts/AlertContext';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, globalStyles } from '../styles/globalStyles';
 import { apiFetch } from '../services/api';
@@ -12,6 +13,7 @@ export default function GerenciarMatriculas({ route, navigation }) {
   const [disciplinas, setDisciplinas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     carregarMatriculas();
@@ -22,7 +24,7 @@ export default function GerenciarMatriculas({ route, navigation }) {
       const data = await apiFetch(`/matriculas/${aluno.id}`);
       setDisciplinas(data);
     } catch (err) {
-      Alert.alert('Erro', err.message || 'Falha ao carregar disciplinas');
+      showAlert('Erro', err.message || 'Falha ao carregar disciplinas');
     } finally {
       setLoading(false);
     }
@@ -35,9 +37,9 @@ export default function GerenciarMatriculas({ route, navigation }) {
   };
 
   const handleSalvar = async () => {
-    Alert.alert(
+    showAlert(
       'Confirmar Matrículas',
-      'Aviso: Desmatricular um aluno apagar quaisquer notas lanadas para ele naquela disciplina. Deseja continuar?',
+      'Aviso: Desmatricular um aluno apagar quaisquer notas lançadas para ele naquela disciplina. Deseja continuar?',
       [
         { text: 'Cancelar', style: 'cancel' },
         { 
@@ -50,10 +52,10 @@ export default function GerenciarMatriculas({ route, navigation }) {
                 method: 'POST',
                 body: JSON.stringify({ disciplinasAtivas: ativas })
               });
-              Alert.alert('Sucesso', 'Matrículas atualizadas com sucesso!');
+              showAlert('Sucesso', 'Matrículas atualizadas com sucesso!');
               navigation.goBack();
             } catch (err) {
-              Alert.alert('Erro', err.message || 'Falha ao salvar matrículas');
+              showAlert('Erro', err.message || 'Falha ao salvar matrículas');
             } finally {
               setSaving(false);
             }

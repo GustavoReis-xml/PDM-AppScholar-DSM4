@@ -107,6 +107,9 @@ export default function Dashboard({ navigation }) {
               </View>
               <View style={styles.grid}>
                 <MenuCard icon="library" color={colors.warning} title="Disciplinas" onPress={() => navigation.navigate('CadastroDisciplinas')} />
+                <MenuCard icon="ribbon" color="#7C3AED" title="Cursos" onPress={() => navigation.navigate('CadastroCursos')} />
+              </View>
+              <View style={styles.grid}>
                 <MenuCard icon="create" color={colors.success} title="Lançar Notas" onPress={() => navigation.navigate('LancarNotas')} />
               </View>
 
@@ -116,6 +119,8 @@ export default function Dashboard({ navigation }) {
               <CustomButton title="Lista de Professores" onPress={() => navigation.navigate('ListaProfessores')} color={colors.accent} icon="people-circle-outline" />
               <View style={{ height: 12 }} />
               <CustomButton title="Lista de Disciplinas" onPress={() => navigation.navigate('ListaDisciplinas')} color={colors.warning} icon="list-outline" />
+              <View style={{ height: 12 }} />
+              <CustomButton title="Lista de Cursos" onPress={() => navigation.navigate('ListaCursos')} color="#7C3AED" icon="school-outline" />
 
               <Text style={globalStyles.sectionLabel}>🎓 Acadêmico</Text>
               <CustomButton title="Consulta de Boletim" onPress={() => navigation.navigate('Boletim')} color={colors.primaryDark} icon="document-text-outline" />

@@ -1,6 +1,7 @@
 import SafeKeyboard from '../components/SafeKeyboard';
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform, StyleSheet, Keyboard } from 'react-native';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, StyleSheet, Keyboard } from 'react-native';
+import { useAlert } from '../contexts/AlertContext';
 import { Picker } from '@react-native-picker/picker';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
@@ -17,11 +18,23 @@ export default function CadastroDisciplinas({ route, navigation }) {
   const [curso, setCurso] = useState(discEdit?.curso || '');
   const [semestre, setSemestre] = useState(discEdit?.semestre || '');
   const [professores, setProfessores] = useState([]);
+  const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     carregarProfessores();
+    carregarCursos();
   }, []);
+
+  const carregarCursos = async () => {
+    try {
+      const data = await apiFetch('/cursos');
+      setCursos(data);
+    } catch (err) {
+      console.log('Erro ao carregar cursos:', err);
+    }
+  };
 
   const carregarProfessores = async () => {
     try {
@@ -34,7 +47,7 @@ export default function CadastroDisciplinas({ route, navigation }) {
 
   const handleCadastrar = async () => {
     if (!nome || !professorId || !curso) {
-      Alert.alert('Erro', 'Por favor, preencha pelo menos o Nome, Professor e Curso.');
+      showAlert('Erro', 'Por favor, preencha pelo menos o Nome, Professor e Curso.');
       return;
     }
     
@@ -56,7 +69,7 @@ export default function CadastroDisciplinas({ route, navigation }) {
           body: JSON.stringify(dados)
         });
         console.log('[CadastroDisciplinas] PUT sucesso.');
-        Alert.alert('Sucesso', 'Disciplina atualizada com sucesso!', [
+        showAlert('Sucesso', 'Disciplina atualizada com sucesso!', [
           { text: 'OK', onPress: () => navigation.goBack() }
         ]);
       } else {
@@ -66,7 +79,7 @@ export default function CadastroDisciplinas({ route, navigation }) {
           body: JSON.stringify(dados)
         });
         console.log('[CadastroDisciplinas] POST sucesso.');
-        Alert.alert('Sucesso', 'Disciplina cadastrada com sucesso!', [
+        showAlert('Sucesso', 'Disciplina cadastrada com sucesso!', [
           {
             text: 'OK',
             onPress: () => {
@@ -77,7 +90,7 @@ export default function CadastroDisciplinas({ route, navigation }) {
       }
     } catch (err) {
       console.error('[CadastroDisciplinas] Erro detectado:', err);
-      Alert.alert('Erro', err.message || 'Falha ao cadastrar disciplina.');
+      showAlert('Erro', err.message || 'Falha ao cadastrar disciplina.');
     } finally {
       setLoading(false);
       console.log('[CadastroDisciplinas] Submissão finalizada.');
@@ -130,12 +143,10 @@ export default function CadastroDisciplinas({ route, navigation }) {
         <Text style={styles.pickerLabel}>CURSO VINCULADO</Text>
         <View style={styles.pickerWrapper}>
           <Picker selectedValue={curso} onValueChange={(val) => setCurso(val)}>
-            <Picker.Item label="Selecione o curso..." value="" />
-            <Picker.Item label="Análise e Desenv. de Sistemas" value="Análise e Desenv. de Sistemas" />
-            <Picker.Item label="Desenv. de Software Multiplataforma" value="Desenv. de Software Multiplataforma" />
-            <Picker.Item label="Gestão da Tecnãologia da Informação" value="Gestão da Tecnãologia da Informação" />
-            <Picker.Item label="Logística" value="Logística" />
-            <Picker.Item label="Gestão de Recursos Humanãos" value="Gestão de Recursos Humanãos" />
+            <Picker.Item label={cursos.length > 0 ? 'Selecione o curso...' : 'Carregando cursos...'} value="" />
+            {cursos.map((c) => (
+              <Picker.Item key={c.id} label={c.nome} value={c.nome} />
+            ))}
           </Picker>
         </View>
 

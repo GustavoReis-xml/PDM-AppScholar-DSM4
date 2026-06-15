@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { useAlert } from '../contexts/AlertContext';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, globalStyles } from '../styles/globalStyles';
 import CustomInput from '../components/CustomInput';
@@ -15,6 +16,7 @@ export default function Boletim({ route }) {
   const [loading, setLoading] = useState(false);
   const { usuario } = useAuth();
   const perfil = usuario?.perfil;
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     if (paramMatricula) {
@@ -22,14 +24,14 @@ export default function Boletim({ route }) {
     } else if (perfil === 'aluno' && usuario?.matricula) {
       buscarBoletim(usuario.matricula);
     } else if (perfil === 'aluno') {
-      Alert.alert('Erro', 'Matrícula não encontrada.');
+      showAlert('Erro', 'Matrícula não encontrada.');
     }
   }, [paramMatricula]);
 
   const buscarBoletim = async (matSearch) => {
     const mat = typeof matSearch === 'string' ? matSearch : matricula;
     if (!mat || !mat.trim()) {
-      Alert.alert('Aviso', 'Digite a matrícula do aluno para buscar o boletim.');
+      showAlert('Aviso', 'Digite a matrícula do aluno para buscar o boletim.');
       return;
     }
     
@@ -39,7 +41,7 @@ export default function Boletim({ route }) {
       const data = await apiFetch(`/boletim/${mat}`);
       setBoletim(data);
     } catch (err) {
-      Alert.alert('Erro', err.message || 'Boletim não encontrado.');
+      showAlert('Erro', err.message || 'Boletim não encontrado.');
     } finally {
       setLoading(false);
     }

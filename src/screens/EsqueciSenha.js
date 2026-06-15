@@ -1,6 +1,7 @@
 import SafeKeyboard from '../components/SafeKeyboard';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
+import { useAlert } from '../contexts/AlertContext';
 import SafeBlurView from '../components/SafeBlurView';
 import GlassBackground from '../components/GlassBackground';
 import CustomInput from '../components/CustomInput';
@@ -14,15 +15,16 @@ export default function EsqueciSenha({ navigation }) {
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [loading, setLoading] = useState(false);
+  const { showAlert } = useAlert();
 
   const handleReset = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (!email || !novaSenha || !confirmarSenha) {
-      Alert.alert('Atenção', 'Preencha todos os campos.');
+      showAlert('Atenção', 'Preencha todos os campos.');
       return;
     }
     if (novaSenha !== confirmarSenha) {
-      Alert.alert('Erro', 'As senhas não coincidem.');
+      showAlert('Erro', 'As senhas não coincidem.');
       return;
     }
     
@@ -34,12 +36,12 @@ export default function EsqueciSenha({ navigation }) {
       });
       
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Sucesso', 'Sua senha foi redefinida com sucesso!', [
+      showAlert('Sucesso', 'Sua senha foi redefinida com sucesso!', [
         { text: 'Ir para o Login', onPress: () => navigation.goBack() }
       ]);
     } catch (err) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('Erro', err.message || 'Falha ao redefinir a senha.');
+      showAlert('Erro', err.message || 'Falha ao redefinir a senha.');
     } finally {
       setLoading(false);
     }

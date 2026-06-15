@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert, TouchableOpacity, RefreshControl, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, TextInput } from 'react-native';
+import { useAlert } from '../contexts/AlertContext';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, globalStyles } from '../styles/globalStyles';
 import { apiFetch } from '../services/api';
@@ -14,6 +15,7 @@ export default function ListaDisciplinas({ navigation }) {
   const [search, setSearch] = useState('');
   const { usuario } = useAuth();
   const perfil = usuario?.perfil;
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     carregarDisciplinas();
@@ -29,7 +31,7 @@ export default function ListaDisciplinas({ navigation }) {
       }
       setDisciplinas(data);
     } catch (err) {
-      Alert.alert('Erro', err.message || 'Falha ao carregar disciplinas');
+      showAlert('Erro', err.message || 'Falha ao carregar disciplinas');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -42,7 +44,7 @@ export default function ListaDisciplinas({ navigation }) {
   };
 
   const handleDeletar = (id, nome) => {
-    Alert.alert(
+    showAlert(
       'Excluir Disciplina',
       `Tem certeza que deseja excluir ${nome}?`,
       [
@@ -53,10 +55,10 @@ export default function ListaDisciplinas({ navigation }) {
           onPress: async () => {
             try {
               await apiFetch(`/disciplinas/${id}`, { method: 'DELETE' });
-              Alert.alert('Sucesso', 'Disciplina excluda.');
+              showAlert('Sucesso', 'Disciplina excluída.');
               carregarDisciplinas();
             } catch (err) {
-              Alert.alert('Erro', err.message);
+              showAlert('Erro', err.message);
             }
           }
         }

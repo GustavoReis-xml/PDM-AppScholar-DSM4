@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert, TouchableOpacity, RefreshControl, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, TextInput } from 'react-native';
+import { useAlert } from '../contexts/AlertContext';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, globalStyles } from '../styles/globalStyles';
 import { apiFetch } from '../services/api';
@@ -14,6 +15,7 @@ export default function ListaProfessores({ navigation }) {
   const [search, setSearch] = useState('');
   const { usuario } = useAuth();
   const perfil = usuario?.perfil;
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     carregarProfessores();
@@ -24,7 +26,7 @@ export default function ListaProfessores({ navigation }) {
       const data = await apiFetch('/professores');
       setProfessores(data);
     } catch (err) {
-      Alert.alert('Erro', err.message || 'Falha ao carregar professores');
+      showAlert('Erro', err.message || 'Falha ao carregar professores');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -37,7 +39,7 @@ export default function ListaProfessores({ navigation }) {
   };
 
   const handleDeletar = (id, nome) => {
-    Alert.alert(
+    showAlert(
       'Excluir Professor',
       `Tem certeza que deseja excluir ${nome}?`,
       [
@@ -48,10 +50,10 @@ export default function ListaProfessores({ navigation }) {
           onPress: async () => {
             try {
               await apiFetch(`/professores/${id}`, { method: 'DELETE' });
-              Alert.alert('Sucesso', 'Professor excluído.');
+              showAlert('Sucesso', 'Professor excluído.');
               carregarProfessores();
             } catch (err) {
-              Alert.alert('Erro', err.message);
+              showAlert('Erro', err.message);
             }
           }
         }

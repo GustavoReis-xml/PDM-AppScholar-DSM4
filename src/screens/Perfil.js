@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useAlert } from '../contexts/AlertContext';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, globalStyles } from '../styles/globalStyles';
 import CustomInput from '../components/CustomInput';
@@ -15,9 +16,10 @@ export default function Perfil({ navigation }) {
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmaSenha, setConfirmaSenha] = useState('');
   const [loading, setLoading] = useState(false);
+  const { showAlert } = useAlert();
 
   const handleLogout = () => {
-    Alert.alert('Sair', 'Tem certeza que deseja encerrar a sessão?', [
+    showAlert('Sair', 'Tem certeza que deseja encerrar a sessão?', [
       { text: 'Cancelar', style: 'cancel' },
       { 
         text: 'Sair', 
@@ -29,11 +31,11 @@ export default function Perfil({ navigation }) {
 
   const handleMudarSenha = async () => {
     if (!novaSenha || !confirmaSenha) {
-      Alert.alert('Aviso', 'Preencha a nova senha e a confirmação.');
+      showAlert('Aviso', 'Preencha a nova senha e a confirmação.');
       return;
     }
     if (novaSenha !== confirmaSenha) {
-      Alert.alert('Aviso', 'As senhas não coincidem.');
+      showAlert('Aviso', 'As senhas não coincidem.');
       return;
     }
 
@@ -43,11 +45,11 @@ export default function Perfil({ navigation }) {
         method: 'PUT',
         body: JSON.stringify({ nova_senha: novaSenha })
       });
-      Alert.alert('Sucesso', 'Senha alterada com sucesso!');
+      showAlert('Sucesso', 'Senha alterada com sucesso!');
       setNovaSenha('');
       setConfirmaSenha('');
     } catch (err) {
-      Alert.alert('Erro', err.message || 'Falha ao alterar senha.');
+      showAlert('Erro', err.message || 'Falha ao alterar senha.');
     } finally {
       setLoading(false);
     }

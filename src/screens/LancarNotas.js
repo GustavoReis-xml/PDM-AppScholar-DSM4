@@ -1,6 +1,7 @@
 import SafeKeyboard from '../components/SafeKeyboard';
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Alert, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { useAlert } from '../contexts/AlertContext';
 import { Picker } from '@react-native-picker/picker';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
@@ -18,6 +19,7 @@ export default function LancarNotas() {
   const [nota2, setNota2] = useState('');
   const [loading, setLoading] = useState(false);
   const { usuario } = useAuth();
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -31,7 +33,7 @@ export default function LancarNotas() {
         }
         setDisciplinas(disciplinasData);
       } catch (err) {
-        Alert.alert('Erro', err.message || 'Falha ao carregar dados iniciais');
+        showAlert('Erro', err.message || 'Falha ao carregar dados iniciais');
       }
     };
     carregarDados();
@@ -39,7 +41,7 @@ export default function LancarNotas() {
 
   const handleSalvar = async () => {
     if (!disciplinaId || !alunoId || !nota1 || !nota2) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+      showAlert('Erro', 'Por favor, preencha todos os campos.');
       return;
     }
 
@@ -47,7 +49,7 @@ export default function LancarNotas() {
     const n1 = parseFloat(nota1);
     const n2 = parseFloat(nota2);
     if (isNaN(n1) || isNaN(n2) || n1 < 0 || n1 > 10 || n2 < 0 || n2 > 10) {
-      Alert.alert('Nota Inválida', 'As notas devem ser valores numéricos entre 0 e 10.');
+      showAlert('Nota Inválida', 'As notas devem ser valores numéricos entre 0 e 10.');
       return;
     }
 
@@ -63,12 +65,12 @@ export default function LancarNotas() {
         })
       });
 
-      Alert.alert('Sucesso', 'Notas salvas com sucesso!');
+      showAlert('Sucesso', 'Notas salvas com sucesso!');
       setNota1('');
       setNota2('');
       setAlunoId('');
     } catch (err) {
-      Alert.alert('Erro', err.message || 'Falha ao lançar nota');
+      showAlert('Erro', err.message || 'Falha ao lançar nota');
     } finally {
       setLoading(false);
     }
@@ -94,7 +96,7 @@ export default function LancarNotas() {
                   const alunosData = await apiFetch(`/disciplinas/${itemValue}/alunos`);
                   setAlunos(alunosData);
                 } catch (err) {
-                  Alert.alert('Erro', 'Falha ao buscar alunos da disciplina');
+                  showAlert('Erro', 'Falha ao buscar alunos da disciplina');
                 }
               } else {
                 setAlunos([]);
