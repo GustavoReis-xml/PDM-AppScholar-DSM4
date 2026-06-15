@@ -78,13 +78,13 @@ DB_USER=postgres
 DB_PASSWORD=sua_senha
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=app_scholar
+DB_NAME=app_scholar_db
 JWT_SECRET=sua_chave_secreta
 ```
 
 Inicie o servidor (ele cuidará de criar as tabelas e popular os dados de teste na primeira vez):
 ```bash
-npm run dev
+npm start
 ```
 > O servidor rodará na porta `3000`.
 
