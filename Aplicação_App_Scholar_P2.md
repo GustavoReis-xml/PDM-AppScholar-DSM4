@@ -162,3 +162,18 @@ https://servicodados.ibge.gov.br/api/v1/localidades/estados
 
 ~~**Curso:** Desenvolvimento de Software Multiplataforma~~ 
 
+Prova:
+Modulo de cadastro e gerenciamento de contas:
+
+tela de listagens de cursos existentes
+
+tela de cadastro contendo (nome do curso, área, duração, coordenador, etc...)
+
+Edição e exclusão de cursos
+
+integraçao com o postgreSQL para gravação e consulta
+
+Implementação de uma nova api para inserção, atualizaçao e remoçao dos cursos.
+
+ajuste do módulo de alunos para vinculaçao do curso 
+
