@@ -101,7 +101,7 @@ const BASE_URL = 'http://SEU_IP_LOCAL:3000/api';
 
 Inicie o Expo:
 ```bash
-npx expo start
+npm start
 ```
 Abra com o emulador pressionando `a` ou escaneie o QR Code com o app **Expo Go** no seu celular.
 
